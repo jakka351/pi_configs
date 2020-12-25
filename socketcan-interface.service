@@ -1,4 +1,4 @@
-/lib/systemd/system/socketcan-interface.service
+#/lib/systemd/system/socketcan-interface.service
 [Unit]
 Description=SocketCAN can0 baudrate 500000
 After=multi-user.target
@@ -6,8 +6,8 @@ After=multi-user.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/sbin/ip link set can0 type can bitrate 500000 loopback off ; /sbin/ifconfig can0 up txqueuelen 1000
-ExecReload=/sbin/ifconfig can0 down ; /sbin/ip link set can0 type can bitrate 500000 loopback off; /sbin/ifconfig can0 up txqueuelen 1000
+ExecStart=/sbin/ip link set can0 type can bitrate 125000 triple-sampling on restart-ms 100 loopback off ; /sbin/ifconfig can0 up txqueuelen 1000
+ExecReload=/sbin/ifconfig can0 down ; /sbin/ip link set can0 type can bitrate 125000 loopback off; /sbin/ifconfig can0 up txqueuelen 1000
 ExecStop=/sbin/ifconfig can0 down
 
 [Install]
