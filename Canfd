@@ -1,0 +1,207 @@
+
+Stack Overflow
+Products
+CAN FD support for Virtual CAN (vcan) on SocketCAN
+Asked 6 years, 2 months ago
+Modified 3 years, 11 months ago
+Viewed 6k times
+4
+
+3
+I have been using SocketCAN and especially the Virtual CAN vcan for quite a while now. However, I never used CAN FD (Flexible Datarate) so far.
+
+Well, I tried it this morning using the can-utils:
+
+cansend vcan0 123##122
+However, I got the response "CAN interface is not CAN FD capable". The vcan interface has been created using the following terminal commands:
+
+ip link add dev vcan0 type vcan
+ip link set up vcan0
+Does anybody know if vcan supports CAN FD? If yes, how do I set up a vcan interface supporting CAN FD?
+
+System configuration: Ubuntu 14.04.1 on VirtualBox.
+
+Thanks in advance, MAW
+
+linux
+can-bus
+socketcan
+canutils
+Share
+Follow
+asked Apr 12, 2016 at 8:52
+user avatar
+MAW
+10111 silver badge55 bronze badges
+Add a comment
+2 Answers
+Sorted by:
+
+Highest score (default)
+6
+a colleague of mine found a solution:
+
+ip link add dev vcan0 type vcan
+ip link set vcan0 mtu 72
+The option "mtu 72" sets the right maximum transmission size for CAN FD. After that vcan accepts CAN FD messages.
+
+MAW
+
+Share
+Follow
+answered Apr 13, 2016 at 6:25
+user avatar
+MAW
+10111 silver badge55 bronze badges
+"ip link set can0 mtu 72" returns, "RTNETLINK answers: Invalid argument" did you do anything different to change the mtu? – 
+Aaron Thompson
+ Sep 27, 2017 at 7:56
+Add a comment
+3
+Excellent finding, MAW!
+
+It works as a charm. Here is what I did, following your advice. Please, do note that commands are generic, and that there is a environment preparation I do NOT want to go into!
+
+To set socketCAN framework beneath Linux kernel (I am using 4.17.2), please, as root:
+
+lsmod | grep can
+modprobe can
+modprobe can_raw
+modprobe can-bcm
+modprobe can-dev
+modprobe can-gw
+modprobe vcan
+lsmod | grep can
+To set the socketCAN-Fd framework, the following should be done (also as root):
+
+ip link add dev vcan0 type vcan
+ip link set vcan0 mtu 72
+ip link set dev vcan0 up
+ifconfig
+The can-utils package is required to test the socketCAN-Fd framework. Also, the following is required: https://github.com/mguentner/cannelloni
+
+And, everything is working like Swiss Clock! :-)
+
+On the xmit side: cangen -f vcan0 -v vcan0
+
+2C3##0.25.5A.FF.1E.DC.BD.CB.42.25.5A.FF.1E.DC.BD.CB.42.25.5A.FF.1E.DC.BD.CB.42.25.5A.FF.1E.DC.BD.CB.42.25.5A.FF.1E.DC.BD.CB.42.25.5A.FF.1E.DC.BD.CB.42.25.5A.FF.1E.DC.BD.CB.42.25.5A.FF.1E.DC.BD.CB.42
+
+On the receiving side: candump vcan0
+
+vcan0 2C3 [64] 25 5A FF 1E DC BD CB 42 25 5A FF 1E DC BD CB 42 25 5A FF 1E DC BD CB 42 25 5A FF 1E DC BD CB 42 25 5A FF 1E DC BD CB 42 25 5A FF 1E DC BD CB 42 25 5A FF 1E DC BD CB 42 25 5A FF 1E DC BD CB 42
+
+Perfect! Thank you so much!
+
+nobody
+
+Share
+Follow
+edited Jul 17, 2018 at 9:39
+community wiki
+2 revs
+nobody
+Add a comment
+Your Answer
+Sign up or log in
+Post as a guest
+Name
+Email
+Required, but never shown
+
+By clicking “Post Your Answer”, you agree to our terms of service, privacy policy and cookie policy
+
+Not the answer you're looking for? Browse other questions tagged linux can-bus socketcan canutils or ask your own question.
+The Overflow Blog
+Celebrating the Stack Exchange sites that turned ten years old in Spring 2022 
+GitHub Copilot is here. But what’s the price? (Ep. 457)
+Featured on Meta
+Testing new traffic management tool
+Duplicated votes are being cleaned up
+Trending: A new answer sorting option
+Ask Wizard Test Results and Next Steps
+Should we burninate the [hyphen] tag?
+Updated button styling for vote arrows: currently in A/B testing
+
+Related
+2054
+How can I profile C++ code running on Linux?
+2126
+How to change permissions for a folder and its subfolders/files in one step
+2601
+How can I recursively find all files in current and subfolders based on wildcard matching?
+1966
+How can I update NodeJS and NPM to their latest versions?
+3
+SocketCAN over Ethernet
+7
+Canplayer won't replay candump files
+1
+vcan0 interface linux communication
+0
+Tiny-CAN I-XL socketCAN extended format
+Hot Network Questions
+Is the bigger wire section always better from the electrical point of view?
+When would one carry a sword on a shoulder with grip upwards?
+What’s the difference between “Bandit” and “Bogey”
+Creating a campaign that ends with a TPK by design
+n points in 2d plane and a method(a,b) that returns all points closer to 0 than (a,b)
+A scifi book containing an artificially-made world with weird centaurs
+Is it shuffled FizzBuzz?
+Is there a recorder-analog for the flute?
+Video format for strava
+Durability of Federal legislation protecting abortion rights in US
+Can you have your lunch at your work-desk in France?
+How to replace a wooden anchor in an decades-old concrete lintel
+What actually is the idea behind the condensed mathematics?
+What is the function or benefit of including juggling mechanics in a fighting game?
+Can I stab through two enemies using a spear?
+Why don't politicians appoint young and healthy ideological fresh graduates as Supreme Court justices?
+Who controls mood lighting on a commercial airplane?
+Quadratic lower bound
+What do you call a place where certain ideas are prevalent?
+How do you come up with superpowers that haven't been overused?
+How to counter magical airforce with civil war level technology
+How to paint the regions?
+Whom to contact for an inevitable Schengen overstay because of medical reasons?
+Best way to recharge battery using alternator?
+ Question feed
+
+STACK OVERFLOW
+Questions
+Help
+PRODUCTS
+Teams
+Advertising
+Collectives
+Talent
+COMPANY
+About
+Press
+Work Here
+Legal
+Privacy Policy
+Terms of Service
+Contact Us
+Cookie Settings
+Cookie Policy
+STACK EXCHANGE NETWORK
+Technology
+Culture & recreation
+Life & arts
+Science
+Professional
+Business
+API
+Data
+Blog
+Facebook
+Twitter
+LinkedIn
+Instagram
+Site design / logo © 2022 Stack Exchange Inc; user contributions licensed under cc by-sa. rev 2022.6.28.42464
+
+Your privacy
+
+By clicking “Accept all cookies”, you agree Stack Exchange can store cookies on your device and disclose information in accordance with our Cookie Policy.
+
+ 
